@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movimentações | CredMais</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="cabecalho">
+        <a href="{{ url_for('inicio') }}" class="marca">
+            <img
+                src="{{ url_for('static', filename='Uploads/logo.png') }}"
+                alt="CredMais"
+                class="logo-imagem"
+            >
+        </a>
+
+        <!-- Botão hambúrguer (só aparece no celular) -->
+        <input type="checkbox" id="menu-toggle" class="menu-toggle">
+        <label for="menu-toggle" class="menu-hamburguer" aria-label="Abrir menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+        <nav class="menu">
+            <a href="{{ url_for('inicio') }}">Dashboard</a>
+            <a href="{{ url_for('inicio') }}">Perfil</a>
+            <a href="{{ url_for('inicio') }}">Simulação</a>
+            <a href="{{ url_for('inicio') }}">Empréstimos</a>
+            <a href="{{ url_for('inicio') }}" class="ativo">Movimentações</a>
+        </nav>
+    </header>
+    <main class="conteudo">
+
+        <h1 class="titulo-mobile">Movimentações</h1>
+
+        {% with mensagens = get_flashed_messages(with_categories=true) %}
+            {% for categoria_msg, mensagem in mensagens %}
+                <div class="mensagem {{ categoria_msg }}">{{ mensagem }}</div>
+            {% endfor %}
+        {% endwith %}
+        <section class="saldo">
+            <div class="saldo-esquerda">
+                <div class="icone icone-azul">
+                    <img
+                        src="{{ url_for('static', filename='Uploads/icone-rotacao-monetaria.png') }}"
+                        alt=""
+                    >
+                </div>
+                <h2>Saldo Atual</h2>
+            </div>
+            <strong class="valor-saldo">
+                R$ {{ "{:,.2f}".format(saldo).replace(",", "X").replace(".", ",").replace("X", ".") }}
+            </strong>
+        </section>
+        <section class="resumos">
+            <article class="cartao-resumo">
+                <div class="icone icone-verde">
+                    <img
+                        src="{{ url_for('static', filename='Uploads/icone-receita-positiva.png') }}"
+                        alt=""
+                    >
+                </div>
+                <h2>Receitas</h2>
+                <div class="resumo-valor">
+                    <strong>
+                        + R$ {{ "{:,.2f}".format(receitas).replace(",", "X").replace(".", ",").replace("X", ".") }}
+                    </strong>
+
+                    <small>Nos últimos 30 dias</small>
+                </div>
+            </article>
+            <article class="cartao-resumo">
+                <div class="icone icone-vermelho">
+                    <img
+                        src="{{ url_for('static', filename='Uploads/ícone-despesas.png') }}"
+                        alt=""
+                    >
+                </div>
+                <h2>Despesas</h2>
+                <div class="resumo-valor">
+                    <strong>
+                        - R$ {{ "{:,.2f}".format(despesas).replace(",", "X").replace(".", ",").replace("X", ".") }}
+                    </strong>
+                    <small>Nos últimos 30 dias</small>
+                </div>
+            </article>
+        </section>
+        <section class="acoes">
+            <form method="GET" action="{{ url_for('inicio') }}" class="form-filtro">
+                <select name="periodo" class="filtro-ano" onchange="this.form.submit()">
+                    {% for chave, info in periodos.items() %}
+                    <option value="{{ chave }}" {% if chave == periodo %}selected{% endif %}>
+                        {{ info[0] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+            <a
+                href="{{ url_for('nova_movimentacao') }}"
+                class="botao botao-adicionar"
+                aria-label="Adicionar Movimentação"
+            >
+                <span class="icone-botao">+</span>
+                <span class="texto-botao">Adicionar Movimentação</span>
+            </a>
+            <a
+                href="{{ url_for('relatorio', periodo=periodo) }}"
+                class="botao botao-pdf"
+                aria-label="Baixar como PDF"
+            >
+                <span class="icone-botao">&darr;</span>
+                <span class="texto-botao">Baixar como PDF</span>
+            </a>
+        </section>
+        <section class="tabela-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th class="descricao">Descrição</th>
+                        <th>Categoria</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in dados %}
+                    <tr class="linha-clicavel"
+                        onclick="window.location='{{ url_for('visualizar_movimentacao', id_mov=item.id) }}'">
+                        <td data-label="Data">{{ item.data }}</td>
+                        <td class="descricao">
+                            <a href="{{ url_for('visualizar_movimentacao', id_mov=item.id) }}">{{ item.descricao }}</a>
+                        </td>
+                        <td class="categoria">{{ item.categoria }}</td>
+
+                        <td class="valor {% if item.categoria == 'Receita' %}receita{% else %}despesa{% endif %}">
+                            {% if item.categoria == 'Receita' %}+{% else %}-{% endif %}
+                            R$ {{ "{:,.2f}".format(item.valor).replace(",", "X").replace(".", ",").replace("X", ".") }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4">Nenhuma movimentação neste período.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+</body>
+</html>
