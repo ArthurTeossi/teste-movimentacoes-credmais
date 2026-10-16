@@ -1,6 +1,6 @@
 import os
 from datetime import date, datetime, timedelta
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation  #pra que serve isso anta gorda 
 
 import fdb
 from flask import (Flask, render_template, request, redirect, url_for, flash, send_file, jsonify)
@@ -28,7 +28,7 @@ PERIODOS = {
     "ano": ("Último ano", 365),
     "mes": ("Último mês", 30),
     "semana": ("Últimos 7 dias", 7),
-    "dia": ("Últimas 24 horas", 1),
+    "dia": ("Últimas 24 horas", 1),    #tira issso ANTA GORDA
 }
 
 
@@ -41,18 +41,18 @@ def conectar():
     )
 
 
-def formatar_reais(valor):
+def formatar_reais(valor):  #SE VC N EXPLICAR DIREITO TIRA ANTA GORDA
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 # permite usar {{ valor|reais }} nos templates
-app.add_template_filter(formatar_reais, "reais")
+app.add_template_filter(formatar_reais, "reais")  #QUE PORRA É ESSA
 
 
 def data_inicial(periodo):
     """Calcula a data de início do filtro escolhido."""
     dias = PERIODOS[periodo][1]
-    return date.today() - timedelta(days=dias)
+    return date.today() - timedelta(days=dias)   #OQUE ISSO SIGNOFICA PORRA 
 
 
 # ----------------------------------------------------------------
@@ -69,7 +69,7 @@ def montar_movimentacao(linha):
     return {
         "id": linha[0],
         "data": linha[1].strftime("%d/%m"),
-        "data_completa": linha[1].strftime("%d/%m/%Y"),
+        "data_completa": linha[1].strftime("%d/%m/%Y"),  #QUE PORRA DE TANTO CÓDIGO É ESSE
         "descricao": linha[2] or "",
         "categoria": "Receita" if linha[3] == TIPO_RECEITA else "Despesa",
         "valor": float(linha[4])
@@ -146,7 +146,7 @@ def somar(tipo, data_inicio=None):
 @app.route("/")
 @app.route("/movimentacoes")
 def inicio():
-    periodo = request.args.get("periodo", "ano")
+    periodo = request.args.get("periodo", "ano")   #OQUE É AGS
     if periodo not in PERIODOS:
         periodo = "ano"
 
@@ -270,7 +270,7 @@ def editar_movimentacao(id_mov):
 
 @app.route("/movimentacao/<int:id_mov>/excluir", methods=["POST"])
 def excluir_movimentacao(id_mov):
-    mov = buscar_movimentacao(id_mov)
+    mov = buscar_movimentacao(id_mov)   #PQ USA ID DENTRO DA CHAVE 
 
     if mov is None:
         flash("Movimentação não encontrada.", "erro")
@@ -297,7 +297,7 @@ def excluir_movimentacao(id_mov):
 
 def texto_pdf(texto):
     """O FPDF com fonte Arial só aceita Latin-1; troca o que não couber."""
-    return str(texto).encode("latin-1", "replace").decode("latin-1")
+    return str(texto).encode("latin-1", "replace").decode("latin-1")  # OQUE SAO ESSES CODIGOS 
 
 
 @app.route("/relatorio", methods=["GET"])
@@ -310,9 +310,9 @@ def relatorio():
     movimentacoes = buscar_movimentacoes(data_inicial(periodo))
 
     if not movimentacoes:
-        return jsonify({"erro": "Nenhuma movimentação encontrada no período."}), 404
+        return jsonify({"erro": "Nenhuma movimentação encontrada no período."}), 404  #Q PORRA É JSONIFY
 
-    # 2. Desenho do PDF
+    # 2. Desenho do PDF   # TIRA ESSA PORRA DE DESENHO DO PDF SE NAO TIVER NO CODIGO DA LAIS 
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
@@ -350,7 +350,7 @@ def relatorio():
             total_despesas += item["valor"]
             sinal = "-"
 
-        pdf.cell(30, 10, item["data_completa"], border=1)
+        pdf.cell(30, 10, item["data_completa"], border=1)    #TIRA ISSO TAMBEM NAO TEM NO DA LAISSSSSSSSSSSSSSSSSSSS PORRA         
         pdf.cell(80, 10, texto_pdf(item["descricao"])[:40], border=1)
         pdf.cell(35, 10, item["categoria"], border=1)
         pdf.cell(45, 10, f"{sinal} {formatar_reais(item['valor'])}", border=1, ln=True)
